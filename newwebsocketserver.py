@@ -212,12 +212,8 @@ class WebsocketServer:
                             await self.handle_addmember(websocket, path, data)  # 회원가입
                         elif data[0]['command'] == 'AddMemImg':
                             await self.handle_addmemimg(websocket, path, data)  # 회원가입(얼굴이미지)
-                        elif data[0]['command'] == 'GetMemImg':
-                            await self.handle_getmemimg(websocket, path, data)  # 사진가져오기(얼굴이미지)
                         elif data[0]['command'] == 'DeleteMember':
                             await self.handle_deletemember(websocket, path, data)  # 회원탈퇴
-                        elif data[0]['command'] == 'TestChatImg':
-                            await self.handle_testchatimg(websocket, path, data)  # 접속자 모두에게 callback
                         elif data[0]['command'] == 'Login':
                             await self.handle_login(websocket, path, data)  # 로그인
                         elif data[0]['command'] == 'Logout':
@@ -338,22 +334,24 @@ class WebsocketServer:
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'Login': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'Login': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'Login': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'Login': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'Login'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'Login': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'Login'.")
 
     #로그아웃
     async def handle_logout(self, websocket, path, data):
@@ -375,14 +373,16 @@ class WebsocketServer:
                     })
                     new_response = response + '@'
                     await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'Logout': %s", e)
         except SocketError as e:
             logger.warning("Socket error occurred: %s", e)
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'Logout': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'Login'.")
 
     #아이디 중복검사
     async def handle_Idduplicate(self, websocket, path, data):
@@ -391,13 +391,11 @@ class WebsocketServer:
         try:
             id = data[1]["id"]
 
-            print(id)
             sql = f"select exists (select * from member where UserID = %s) as success;"
             val = id
             cur.execute(sql, val)
 
             row = cur.fetchall()
-            print(row[0])
             if row[0][0] == 1:
                 response = json.dumps({
                     "result": "True"
@@ -414,21 +412,21 @@ class WebsocketServer:
 
             conn.commit()
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'IdDuplicate' : %s", e)
         except json.JSONDecodeError as e:
             logger.warning("JSON parsing error: %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'IdDuplicate': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'IdDuplicate'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'IdDuplicate': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'IdDuplicate'.")
 
     #회원가입
     async def handle_addmember(self, websocket, path, data):
@@ -441,7 +439,6 @@ class WebsocketServer:
             name = data[1]['name']
             phone = data[1]['phone']
 
-            print(id, pw, phone, name)
             # DB => 멤버 생성
             sql = f"insert into member values(%s, %s, %s, %s);"
             val = (id, pw, phone, name)
@@ -454,22 +451,24 @@ class WebsocketServer:
 
             new_response = response + '@'
             await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AddMember': %s", e)
         except SocketError as e:
             logger.warning("Socket error occurred 'AddMember': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddMember': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddMember': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddMember'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'AddMember': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddMember'.")
 
     #회원가입(얼굴사진)
     async def handle_addmemimg(self, websocket, path, data):
@@ -492,22 +491,24 @@ class WebsocketServer:
 
             new_response = response + '@'
             await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AddMemImg': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AddMemImg': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddMemImg': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddMemImg': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddMemImg'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'AddMemImg': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddMemImg'.")
 
     #회원탈퇴
     async def handle_deletemember(self, websocket, path, data):
@@ -534,72 +535,36 @@ class WebsocketServer:
             })
             new_response = response + '@'
             await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'DeleteMember': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'DeleteMember': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'DeleteMember': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'DeleteMember': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'DeleteMember'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'DeleteMember': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'DeleteMember'.")
 
     # *****************************************************************
-
-    async def handle_getmemimg(self, websocket, path, data):
-        global conn, cur
-        try:
-            if data[0]['command'] == 'GetMemImg' and 'UserID' in data[1]:
-                id = data[1]['UserID']
-                sql = "SELECT UsFace FROM memfaceimg WHERE UserID = %s;"
-                cur.execute(sql, (id,))
-                rows = cur.fetchall()
-                if rows:
-                    imgs_str = rows[0][0]
-                    send_imgs_str = imgs_str + '@'
-                    await send_chunks(websocket, send_imgs_str)
-                else:
-                    await websocket.send("No image found")
-            else:
-                await websocket.send("Invalid data format")
-        except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
-        except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
-        except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
-        except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
-            if websocket.open:
-                await send_error(websocket, "DB 오류 발생")
-            else:
-                logger.warning("WebSocket connection already closed.")
-        except Exception as e:
-            logger.warning("Error handling 'GetMemImg': %s", e)
-            if websocket.open:
-                await send_error(websocket, "Error occurred")
-            else:
-                logger.warning("WebSocket connection already closed.")
 
     async def handle_addimage(self, websocket, path, data):
         global conn, cur
         try:
             if data[0]['command'] == 'AddImage':
-                print("ㅁㄴㅇㅁㄴㅇ여기들어왓띨디릳릳리")
                 id = data[1]['id']
                 teamno = data[1]['teamno']
                 img_data = data[1]['image']
                 location = data[1]['location']
                 date = data[1]['date']
-                print(location)
-                print(date)
 
                 # 데이터 전처리
                 latitude = location['latitude']  # 위도
@@ -608,10 +573,8 @@ class WebsocketServer:
                 addarr = full_address['documents']
 
                 address = addarr[0]['address_name']
-                print(address)
 
                 date_object = datetime.strptime(date, "%Y/%m/%d %H:%M:%S")
-                print("여기까지 옴")
 
                 month = date_object.month
 
@@ -642,10 +605,6 @@ class WebsocketServer:
                 background = real_received_data['background_predictions']
                 caption = real_received_data['captions_predictions']
 
-                # face = '?????누구게?????'
-                # background = '??????어디게???????'
-                # caption = '현재 비트에는 많은 비가 내리고 있습니다.'
-
                 sql = 'INSERT INTO Images VALUES (NULL, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);'
                 val = (id, img_data, teamno, face, background, caption, latitude, longitude, address, date, season)
                 cur.execute(sql, val)
@@ -675,24 +634,24 @@ class WebsocketServer:
                     })
                     new_response = response + '@'
                     await websocket.send(new_response)
-        except ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AddImage': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AddImage': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddImage': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddImage': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddImage'.")
         except Exception as e:
-            logger.warning("Error handling: %s", e)
+            logger.warning("Error handling 'AddImage': %s", e)
             if websocket.open:
                 await send_error(websocket, "Error occurred")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddImage'.")
 
     async def handle_getallimage(self, websocket, path, data):
         global conn, cur
@@ -703,130 +662,122 @@ class WebsocketServer:
         orend = ') '
         end = ';'
         try:
-            if data[0]['command'] == 'GetAllImage':
-                print("이미지 전부 받을려고 옴!!")
-                teamnos = data[1]['team']
-                last_img_num = data[1]["last_img_num"]
-                print(teamnos)
-                print(last_img_num)
+            teamnos = data[1]['team']
+            last_img_num = data[1]["last_img_num"]
 
-                teamnos_tuple = tuple(teamnos)
+            teamnos_tuple = tuple(teamnos)
 
-                if last_img_num is None:
-                    print("None통과함!")
-                    realadd = ad * (len(teamnos) - 1)
-                    rerealadd = sql + realadd + orend
-                    realsql = rerealadd + odb + end
-                    val = teamnos_tuple
-                    print(realsql)
+            if last_img_num is None:
+                realadd = ad * (len(teamnos) - 1)
+                rerealadd = sql + realadd + orend
+                realsql = rerealadd + odb + end
+                val = teamnos_tuple
+                print(realsql)
 
-                    cur.execute(realsql, val)
-                    rows = cur.fetchall()
+                cur.execute(realsql, val)
+                rows = cur.fetchall()
 
-                    if rows is not None:
-                        for datas in rows:
-                            img_num = datas[0]
-                            id = datas[1]
-                            img_data = datas[2]
-                            teamno = datas[3]
-                            pre_face = datas[4]
-                            pre_background = datas[5]
-                            pre_caption = datas[6]
-                            latitude = datas[7]
-                            longitude = datas[8]
-                            location = datas[9]
-                            date = datas[10]
-                            season = datas[11]
-                            response = json.dumps({
-                                'command': 'UpdateImage',
-                                "img_num": img_num,
-                                "id": id,
-                                "img_data": img_data,
-                                "teamno": teamno,
-                                "pre_face": pre_face,
-                                "pre_background": pre_background,
-                                "pre_caption": pre_caption,
-                                "latitude": latitude,
-                                "longitude": longitude,
-                                "location": location,
-                                "date": date,
-                                "season": season
-                            })
+                if rows is not None:
+                    for datas in rows:
+                        img_num = datas[0]
+                        id = datas[1]
+                        img_data = datas[2]
+                        teamno = datas[3]
+                        pre_face = datas[4]
+                        pre_background = datas[5]
+                        pre_caption = datas[6]
+                        latitude = datas[7]
+                        longitude = datas[8]
+                        location = datas[9]
+                        date = datas[10]
+                        season = datas[11]
+                        response = json.dumps({
+                            'command': 'UpdateImage',
+                            "img_num": img_num,
+                            "id": id,
+                            "img_data": img_data,
+                            "teamno": teamno,
+                            "pre_face": pre_face,
+                            "pre_background": pre_background,
+                            "pre_caption": pre_caption,
+                            "latitude": latitude,
+                            "longitude": longitude,
+                            "location": location,
+                            "date": date,
+                            "season": season
+                        })
 
-                            new_response = response + '@'
+                        new_response = response + '@'
 
-                            await send_chunks(websocket, new_response)
+                        await send_chunks(websocket, new_response)
+
+            else:
+                if isinstance(last_img_num, int):
+                    last_img_num = [last_img_num]
+
+                last_img_num_tuple = tuple(last_img_num)
+                realadd = ad * (len(teamnos) - 1)
+                realsql = sql + realadd + orend + ifff + odb + end
+                val = teamnos_tuple + last_img_num_tuple
+                print(realsql)
+
+                cur.execute(realsql, val)
+                rows = cur.fetchall()
+
+                if rows is not None:
+                    for datas in rows:
+                        img_num = datas[0]
+                        id = datas[1]
+                        img_data = datas[2]
+                        teamno = datas[3]
+                        pre_face = datas[4]
+                        pre_background = datas[5]
+                        pre_caption = datas[6]
+                        latitude = datas[7]
+                        longitude = datas[8]
+                        location = datas[9]
+                        date = datas[10]
+                        season = datas[11]
+                        response = json.dumps({
+                            'command': 'UpdateImage',
+                            "img_num": img_num,
+                            "id": id,
+                            "img_data": img_data,
+                            "teamno": teamno,
+                            "pre_face": pre_face,
+                            "pre_background": pre_background,
+                            "pre_caption": pre_caption,
+                            "latitude": latitude,
+                            "longitude": longitude,
+                            "location": location,
+                            "date": date,
+                            "season": season
+                        })
+
+                        new_response = response + '@'
+
+                        await send_chunks(websocket, new_response)
 
                 else:
-                    print("None통과못함 ㅋ")
-                    if isinstance(last_img_num, int):
-                        last_img_num = [last_img_num]
-
-                    last_img_num_tuple = tuple(last_img_num)
-                    realadd = ad * (len(teamnos) - 1)
-                    realsql = sql + realadd + orend + ifff + odb + end
-                    val = teamnos_tuple + last_img_num_tuple
-                    print(realsql)
-
-                    cur.execute(realsql, val)
-                    rows = cur.fetchall()
-                    #print(rows)
-
-                    if rows is not None:
-                        for datas in rows:
-                            img_num = datas[0]
-                            id = datas[1]
-                            img_data = datas[2]
-                            teamno = datas[3]
-                            pre_face = datas[4]
-                            pre_background = datas[5]
-                            pre_caption = datas[6]
-                            latitude = datas[7]
-                            longitude = datas[8]
-                            location = datas[9]
-                            date = datas[10]
-                            season = datas[11]
-                            response = json.dumps({
-                                'command': 'UpdateImage',
-                                "img_num": img_num,
-                                "id": id,
-                                "img_data": img_data,
-                                "teamno": teamno,
-                                "pre_face": pre_face,
-                                "pre_background": pre_background,
-                                "pre_caption": pre_caption,
-                                "latitude": latitude,
-                                "longitude": longitude,
-                                "location": location,
-                                "date": date,
-                                "season": season
-                            })
-
-                            new_response = response + '@'
-
-                            #print(response)
-
-                            await send_chunks(websocket, new_response)
-            else:
-                response = json.dumps({
-                    "result": "False"
-                })
-                new_response = response + '@'
-                await websocket.send(new_response)
+                    response = json.dumps({
+                        "result": "False"
+                    })
+                    new_response = response + '@'
+                    await websocket.send(new_response)
         except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+            logger.warning("WebSocket connection closed 'GetAllImage': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'GetAllImage': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'GetAllImage': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'GetAllImage': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'GetAllImage'.")
         except Exception as e:
-            logger.warning("Error handling: %s", e)
+            logger.warning("Error handling 'GetAllImage': %s", e)
             if websocket.open:
                 response = json.dumps({
                     "result": "False"
@@ -834,128 +785,108 @@ class WebsocketServer:
                 new_response = response + '@'
                 await websocket.send(new_response)
             else:
-                logger.warning("WebSocket connection already closed.")
-
-    async def handle_testchatimg(self, websocket, path, data):
-        try:
-            print("실시간 여기 들어오긴 함")
-            if data[0]['command'] == 'TestChatImg':
-                send_data = json.dumps(data)
-                await asyncio.gather(*[send_chunks(ws, send_data) for ws in self.connected_clients])
-            else:
-                await websocket.send("Invalid data format")
-
-        except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
-        except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
-        except Exception as e:
-            logger.warning("Error handling 'GetMemImg': %s", e)
-            if websocket.open:
-                await send_error(websocket, "Error occurred")
-            else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'GetAllImage'.")
 
     # **********************************************************************
     # 친구 기능
     # **********************************************************************
 
     async def handle_addfriend(self, websocket, path, data):
+        global cur, conn
         try:
-            if data[0]['command'] == 'AddFriend':
-                from_id = data[1]['from_id']
-                to_id = data[1]['to_id']
+            from_id = data[1]['from_id']
+            to_id = data[1]['to_id']
 
-                sql = "insert into friendcontrol (from_mem_id, to_mem_id, is_friend) select %s, %s, true where %s != %s and not exists (select 1 from friendcontrol where from_mem_id = %s and to_mem_id = %s and is_friend = true);"
-                val = (from_id, to_id, from_id, to_id, from_id, to_id)
-                cur.execute(sql, val)
+            sql = "insert into friendcontrol (from_mem_id, to_mem_id, is_friend) select %s, %s, true where %s != %s and not exists (select 1 from friendcontrol where from_mem_id = %s and to_mem_id = %s and is_friend = true);"
+            val = (from_id, to_id, from_id, to_id, from_id, to_id)
+            cur.execute(sql, val)
 
-                if cur.rowcount == 0:
-                    response = json.dumps({
-                        "result": "False"
-                    })
-                    new_response = response + '@'
-                    await websocket.send(new_response)
-                    return
-
-                conn.commit()
-
-                sql = "insert into friendcontrol (from_mem_id, to_mem_id, is_friend) select %s, %s, false where  %s != %s and not exists (select 1 from friendcontrol where from_mem_id = %s and to_mem_id = %s and is_friend = false);"
-                val = (to_id, from_id, to_id, from_id, to_id, from_id)
-                cur.execute(sql, val)
-                conn.commit()
-
+            if cur.rowcount == 0:
                 response = json.dumps({
-                    "result": "True"
+                    "result": "False"
                 })
-
                 new_response = response + '@'
                 await websocket.send(new_response)
+                return
+
+            conn.commit()
+
+            sql = "insert into friendcontrol (from_mem_id, to_mem_id, is_friend) select %s, %s, false where  %s != %s and not exists (select 1 from friendcontrol where from_mem_id = %s and to_mem_id = %s and is_friend = false);"
+            val = (to_id, from_id, to_id, from_id, to_id, from_id)
+            cur.execute(sql, val)
+            conn.commit()
+
+            response = json.dumps({
+                "result": "True"
+            })
+
+            new_response = response + '@'
+            await websocket.send(new_response)
+
         except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+            logger.warning("WebSocket connection closed 'AddFriend': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AddFriend': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddFriend': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddFriend'.")
         except Exception as e:
-            logger.warning("Error handling 'GetMemImg': %s", e)
+            logger.warning("Error handling 'AddFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "Error occurred")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddFriend'.")
 
     async def handle_refreshaddfriend(self, websocket, path, data):
         global conn, cur
         try:
-            if data[0]['command'] == 'RefreshAddFriend':
-                id = data[1]['id']
+            id = data[1]['id']
 
-                sql = "select fc.to_mem_id, m.UsName from friendcontrol fc join member m on fc.to_mem_id = m.UserID where fc.from_mem_id = %s and fc.is_friend = false;"
-                val = (id,)
-                cur.execute(sql, val)
-                conn.commit()
-                rows = cur.fetchall()
+            sql = "select fc.to_mem_id, m.UsName from friendcontrol fc join member m on fc.to_mem_id = m.UserID where fc.from_mem_id = %s and fc.is_friend = false;"
+            val = (id,)
+            cur.execute(sql, val)
+            conn.commit()
+            rows = cur.fetchall()
 
-                to_ids = []
-                to_names = []
+            to_ids = []
+            to_names = []
 
-                for row in rows:
-                    to_id = row[0]
-                    to_name = row[1]
+            for row in rows:
+                to_id = row[0]
+                to_name = row[1]
 
-                    to_ids.append(to_id)
-                    to_names.append(to_name)
+                to_ids.append(to_id)
+                to_names.append(to_name)
 
-                response = json.dumps({
-                    "to_ids": to_ids,
-                    "to_names": to_names
-                })
-                new_response = response + '@'
-                await websocket.send(new_response)
+            response = json.dumps({
+                "to_ids": to_ids,
+                "to_names": to_names
+            })
+            new_response = response + '@'
+            await websocket.send(new_response)
         except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+            logger.warning("WebSocket connection closed 'RefreshAddFriend': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'RefreshAddFriend': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'RefreshAddFriend': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'RefreshAddFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'RefreshAddFriend'.")
         except Exception as e:
-            logger.warning("Error handling 'GetMemImg': %s", e)
+            logger.warning("Error handling 'RefreshAddFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "Error occurred")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'RefreshAddFriend'.")
 
     async def handle_acceptfriend(self, websocket, path, data):
         global cur, conn
@@ -994,23 +925,23 @@ class WebsocketServer:
                 })
                 await websocket.send(response)
         except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+            logger.warning("WebSocket connection closed 'AcceptFriend': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AcceptFriend': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AcceptFriend': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AcceptFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AcceptFriend'.")
         except Exception as e:
-            logger.warning("Error handling 'GetMemImg': %s", e)
+            logger.warning("Error handling 'AcceptFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "Error occurred")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AcceptFriend'.")
 
     async def handle_getmyfriend(self, websocket, path, data):
         global cur, conn
@@ -1042,23 +973,23 @@ class WebsocketServer:
             new_response = response + '@'
             await websocket.send(new_response)
         except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+            logger.warning("WebSocket connection closed 'GetMyFriend': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'GetMyFriend': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'GetMyFriend': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'GetMyFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
                 logger.warning("WebSocket connection already closed.")
         except Exception as e:
-            logger.warning("Error handling 'GetMemImg': %s", e)
+            logger.warning("Error handling 'GetMyFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "Error occurred")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'GetMyFriend'.")
 
     async def handle_deletefriend(self, websocket, path, data):
         global cur, conn
@@ -1081,23 +1012,23 @@ class WebsocketServer:
             })
             await websocket.send(response + '@')
         except websockets.exceptions.ConnectionClosedError as e:
-            logger.warning("WebSocket connection closed: %s", e)
+            logger.warning("WebSocket connection closed 'DeleteFriend': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'DeleteFriend': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'DeleteFriend': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'DeleteFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "DB 오류 발생")
             else:
                 logger.warning("WebSocket connection already closed.")
         except Exception as e:
-            logger.warning("Error handling: %s", e)
+            logger.warning("Error handling 'DeleteFriend': %s", e)
             if websocket.open:
                 await send_error(websocket, "Error occurred")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'DeleteFriend'.")
 
     # **********************************************************************
 
@@ -1157,22 +1088,24 @@ class WebsocketServer:
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AddTeam': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AddTeam': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddTeam': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddTeam': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddTeam'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'AddTeam': %s", e)
             if websocket.open:
                 await send_error(websocket, "기타 오류 발생")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddTeam'.")
 
     # 팀 초대
     async def handle_addteammember(self, websocket, path, data):
@@ -1217,22 +1150,24 @@ class WebsocketServer:
                     new_response = response + '@'
 
                     await websocket1.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AddTeamMember': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AddTeamMember': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddTeamMember': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddTeamMember': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddTeamMember'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'AddTeamMember': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddTeamMember'.")
 
     async def handle_addteammembers(self, websocket, path, data):
         global cur, conn
@@ -1307,22 +1242,24 @@ class WebsocketServer:
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AddTeamMemberS': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AddTeamMemberS': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AddTeamMemberS': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AddTeamMemberS': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddTeamMemberS'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'AddTeamMemberS': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AddTeamMemberS'.")
 
     async def handle_acceptteamrequest(self, websocket, path, data):
         global cur, conn
@@ -1365,22 +1302,24 @@ class WebsocketServer:
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'AcceptTeamRequest': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'AcceptTeamRequest': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'AcceptTeamRequest': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'AcceptTeamRequest': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AcceptTeamRequest'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'AcceptTeamRequest': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'AcceptTeamRequest'.")
 
     async def handle_getmyteaminfo(self, websocket, path, data):
         global cur, conn
@@ -1427,22 +1366,24 @@ class WebsocketServer:
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'GetMyTeamInfo': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'GetMyTeamInfo': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'GetMyTeamInfo': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'GetMyTeamInfo': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'GetMyTeamInfo'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'GetMyTeamInfo': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'GetMyTeamInfo'.")
 
     async def handle_deleteteam(self, websocket, path, data):
         global cur, conn
@@ -1455,7 +1396,6 @@ class WebsocketServer:
 
             cur.execute(sql, val)
             row = cur.fetchall()
-            print(row[0][0])
 
             if row:
                 if row[0][0] == 1:
@@ -1498,7 +1438,6 @@ class WebsocketServer:
                     new_response = response + '@'
                     await websocket.send(new_response)
                 else:
-                    print("저스트 팀원 타로티 함!")
                     sql = 'delete from teammem where teamNo = %s and UserID = %s;'
                     val = (team_no, id)
 
@@ -1532,22 +1471,24 @@ class WebsocketServer:
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'DeleteTeam': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'DeleteTeam': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'DeleteTeam': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'DeleteTeam': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'DeleteTeam'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'DeleteTeam': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'DeleteTeam'.")
 
     # **********************************************************************
 
@@ -1562,7 +1503,6 @@ class WebsocketServer:
         global cur, conn
         try:
             teamno = data[1]['teamNo']
-            print("여행시작 드렁옴")
 
             sql = 'select tm.UserID, m.UsName from teammem tm join member m on m.UserID = tm.UserID where tm.teamNo = %s and isaccept = true;'
             val = (teamno,)
@@ -1578,8 +1518,6 @@ class WebsocketServer:
                     id = row[0]
                     name = row[1]
 
-                    print(id, name)
-
                     sql = 'select UsFace from memfaceimg where UserID = %s;'
                     val = (id,)
 
@@ -1592,7 +1530,6 @@ class WebsocketServer:
 
                         parts = face_string.split('$')
                         if len(parts) > 1:
-                            print(len(parts))
                             img1, img2, img3, img4, img5, _ = parts
 
                             image_data1 = base64.b64decode(img1)
@@ -1630,10 +1567,6 @@ class WebsocketServer:
 
                 jpg_images = [encode_image_to_jpg(img) for img in imgs]
 
-                print(len(names))
-                print(names)
-                print(len(jpg_images))
-
                 # 전송할 데이터 준비
                 data = {
                     'create_room': 'True',
@@ -1654,15 +1587,16 @@ class WebsocketServer:
                 new_response = response + '@'
                 await websocket.send(new_response)
             else:
-                print("디비에서 못받아옴")
                 await send_error(websocket, 'False')
                 return
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'TravelStart': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'TravelStart': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'TravelStart': %s", e)
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'TravelStart': %s", e)
 
     async def send_data_to_model(self, reader, writer, data_to_send):
         try:
@@ -1728,14 +1662,16 @@ class WebsocketServer:
                         })
                         new_response = response + '@'
                         await websocket1.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'Back_AddTeamMember': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'Back_AddTeamMember': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'Back_AddTeamMember': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'Back_AddTeamMember': %s", e)
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'Back_AddTeamMember': %s", e)
 
     # *************************************************************************
 
@@ -1747,11 +1683,15 @@ class WebsocketServer:
         global cur, conn
 
         try:
+            logger.info("UpdateInfo 시작 테스트")
             id = data[1]['id']
             name = data[1]['name']
             latitude = data[1]['latitude']
             longitude = data[1]['longitude']
             teamno = data[1]['teamNo']
+
+            count = 0
+            print("위치 갱신 호출받은 멤버: ", count)
 
             if teamno is None:
                 response = json.dumps({
@@ -1783,25 +1723,29 @@ class WebsocketServer:
                             })
 
                             await websocket1.send(response + '@')
+                            count += 1
+                            print("위치 갱신 호출받은 멤버: ", count)
             else:
                 response = json.dumps({
                     "result": "False"
                 })
                 new_response = response + '@'
                 await websocket.send(new_response)
+        except websockets.exceptions.ConnectionClosedError as e:
+            logger.warning("WebSocket connection closed 'UpdateLocation': %s", e)
         except SocketError as e:
-            logger.warning("Socket error occurred: %s", e)
+            logger.warning("Socket error occurred 'UpdateLocation': %s", e)
         except json.JSONDecodeError as e:
-            logger.warning("JSON parsing error: %s", e)
+            logger.warning("JSON parsing error 'UpdateLocation': %s", e)
         except pymysql.MySQLError as e:
-            logger.warning("Database operation failed: %s", e)
+            logger.warning("Database operation failed 'UpdateLocation': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'UpdateLocation'.")
         except Exception as e:
-            logger.warning("An unexpected error occurred: %s", e)
+            logger.warning("An unexpected error occurred 'UpdateLocation': %s", e)
             if websocket.open:
                 await send_error(websocket, "False")
             else:
-                logger.warning("WebSocket connection already closed.")
+                logger.warning("WebSocket connection already closed 'UpdateLocation'.")

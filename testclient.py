@@ -11,7 +11,7 @@ async def connect():
 
         if user_mode == 'Logout':
             response = json.dumps({
-                "id": "rlawndud",
+                "id": "hwshin",
             })
 
             data = json.loads(response)
