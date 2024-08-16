@@ -2661,3 +2661,5 @@ OSError: [WinError 121] 세마포 제한 시간이 만료되었습니다
 2024-08-16 14:21:42,218 - INFO - connection closed
 2024-08-16 14:22:18,564 - INFO - connection open
 2024-08-16 14:23:29,203 - INFO - connection closed
+2024-08-16 14:34:12,412 - INFO - server listening on 0.0.0.0:8080
+2024-08-16 14:34:12,412 - INFO - server start datdebayo!
