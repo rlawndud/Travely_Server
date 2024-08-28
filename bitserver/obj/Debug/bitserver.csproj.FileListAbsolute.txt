@@ -1,0 +1,10 @@
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\bin\Debug\bitserver.exe.config
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\bin\Debug\bitserver.exe
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\bin\Debug\bitserver.pdb
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\bin\Debug\Newtonsoft.Json.dll
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\bin\Debug\Newtonsoft.Json.xml
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\obj\Debug\bitserver.csproj.AssemblyReference.cache
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\obj\Debug\bitserver.csproj.CoreCompileInputs.cache
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\obj\Debug\bitserver.csproj.Up2Date
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\obj\Debug\bitserver.exe
+C:\Users\user\Desktop\bitserver\bitserver\bitserver\obj\Debug\bitserver.pdb
