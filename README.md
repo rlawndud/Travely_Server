@@ -5,8 +5,8 @@
 ```python
 # 모델통신
 self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-self.serverhost = '220.90.180.88'
-self.serverport = 5001
+self.serverhost = AI_SERVER_IP
+self.serverport = PORT
 self.reader = None
 self.writer = None
 self.lock = asyncio.Lock()
@@ -17,10 +17,10 @@ def connect_to_db():
     global conn
     try:
         conn = pymysql.connect(
-            host="127.0.0.1",
-            user="root",
-            password="1234",
-            db="bit",
+            host=DB_HOST,
+            user="xxx",
+            password="xxx",
+            db="db_name",
             charset="utf8"
         )
         print("Database connection successful.")
