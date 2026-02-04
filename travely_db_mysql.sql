@@ -2,7 +2,7 @@ use bit;
 
 select Host,User,plugin,authentication_string FROM mysql.user;
 
-CREATE USER 'root'@'220.90.180.91' IDENTIFIED BY '1234';
+CREATE USER 'root'@'IP' IDENTIFIED BY 'PASSWORD';
 
 drop table if exists memfaceimg;
 
@@ -136,7 +136,7 @@ desc team;
 
 select * from team;
 
-insert into team values(25, '이거로테스트하시오행님', '1');
+insert into team values(25, '이거로테스트', '1');
 
 insert into team (teamNo, teamName, LeaderID) select null, 'YalRU', 'a' where not exists (select teamNo from team where LeaderID = 'a' and teamName = 'YalRU');
 
@@ -161,7 +161,7 @@ foreign key (UserID) references member(UserID) on update cascade
 
 desc teammem;
 
-insert into teammem values(25, '이거로테스트하시오행님', '1', True);
+insert into teammem values(25, '이거로테스트', '1', True);
 
 insert into teammem (teamNo, teamName, UserID, isaccept) select 5, 'YalRU', 'a', false where not exists (select 1 from teammem where teamNo = 5 and teamName = 'YalRU' and UserID = 'a' and isaccept = false);
 
